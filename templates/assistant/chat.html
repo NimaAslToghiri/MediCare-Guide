@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Doctor Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+    .chat-box {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+    }
+    .chat-box.user {
+      background-color: #e1f5fe;
+      text-align: right;
+    }
+    .chat-box.agent {
+      background-color: #f1f8e9;
+      text-align: left;
+    }
+    .upload-section {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    .form-section {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Doctor Assistant</h1>
+
+  {% if user.is_authenticated %}
+    <p>You are logged in as <strong>{{ user.username }}</strong></p>
+  {% else %}
+    <p><a href="/admin/login/">Login</a> to continue.</p>
+  {% endif %}
+
+  <div class="chat-history">
+    {% for msg in chat_history %}
+      <div class="chat-box {{ msg.sender }}">
+        {{ msg.message|linebreaks }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="form-section">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label for="user_message"><strong>Type a message (optional):</strong></label><br>
+      <textarea name="user_message" id="user_message" rows="3" style="width:100%;" placeholder="Write your message here..."></textarea><br><br>
+
+      <label for="file"><strong>Upload a medical file (optional):</strong></label><br>
+      {{ form.as_p }}
+
+      <button type="submit">Send</button>
+    </form>
+  </div>
+</body>
+</html>

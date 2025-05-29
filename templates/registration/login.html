@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Login</button>
+
+      {% if user.is_authenticated %}
+        <p>You are logged in as {{ user.username }}</p>
+        <a href="{% url 'logout' %}">Logout</a>
+    {% endif %}
+  </form>
+</body>
+</html>
