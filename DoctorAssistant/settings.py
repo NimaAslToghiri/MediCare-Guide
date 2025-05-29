@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-wwtcjd0nq-9r$ra0qcwcy=%77#57gtc6t#82hh)vmto8es&j5&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '5.255.119.113']
+# Allow all hosts since we don't know the frontend server IP
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'DoctorAssistant.middleware.CorsMiddleware',  # Use our custom CORS middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -137,12 +139,37 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 
+# CORS Settings for Next.js Frontend Integration
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins during development
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies to be sent
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # CSRF Settings for Next.js Frontend Integration
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF cookie
-CSRF_COOKIE_SAMESITE = 'Lax'  # Appropriate for development with different ports
+CSRF_COOKIE_SAMESITE = 'Lax'  # Appropriate for cross-origin requests
 CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS
 CSRF_USE_SESSIONS = False     # Use cookie-based CSRF tokens (default)
 CSRF_COOKIE_AGE = 31449600    # 1 year (adjust as needed)
 
-# Additional CORS settings if needed for Next.js integration
-# CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # Add your Next.js frontend URL
+# For external frontend, we need to disable CSRF verification for API endpoints
+# or handle it properly with trusted origins
+CSRF_COOKIE_DOMAIN = None     # Allow all domains
+
+# Disable CSRF for development with external frontend
+# In production, you should properly configure CSRF_TRUSTED_ORIGINS
+CSRF_COOKIE_NAME = 'csrftoken'
+
+# Session settings for cross-origin requests
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_HTTPONLY = True

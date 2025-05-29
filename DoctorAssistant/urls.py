@@ -8,18 +8,23 @@ from medassist.views import home, initialize_csrf  # Import the CSRF initializat
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # Admin panel
+    
+    # Main app URLs - include both with and without trailing slashes
     path('medassist/', include('medassist.urls')),  # Include URLs from the medassist app
     path('assistant/', include('assistant.urls')),  # Include URLs from the assistant app
     
-    # CSRF initialization endpoint for Next.js frontend (direct route)
+    # CSRF initialization endpoint - handle both with and without trailing slash
     path('api/initialize-csrf/', initialize_csrf, name='initialize_csrf'),
+    path('api/initialize-csrf', initialize_csrf, name='initialize_csrf_no_slash'),
     
     # Authentication URLs
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
+    # Media files serving
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),  # Serve media files in development
-
+    
+    # Root URL
     path('', home, name='home'),  # Home page for the root URL
 ]
 
@@ -27,3 +32,4 @@ urlpatterns = [
 # In production, you would use a dedicated web server (e.g., Nginx) for media files
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
