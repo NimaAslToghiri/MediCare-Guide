@@ -3,103 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Assistant Chat</title>
+    <title>Simple Chat</title>
     <style>
         body { font-family: sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
         .chat-container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .chat-box { border: 1px solid #ddd; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 4px; background-color: #e9e9e9; }
-        .message { margin-bottom: 8px; padding: 5px 10px; border-radius: 5px; max-width: 70%; }
-        .user-message { background-color: #dcf8c6; margin-left: auto; text-align: right; }
-        .ai-message { background-color: #f0f0f0; }
-        .input-area { display: flex; gap: 10px; margin-top: 10px; }
+        .chat-box { border: 1px solid #ddd; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 4px; background-color: #e9e9e9; display: flex; flex-direction: column;}
+        .message { margin-bottom: 8px; padding: 5px 10px; border-radius: 5px; max-width: 70%; word-wrap: break-word; }
+        .user-message { background-color: #dcf8c6; align-self: flex-end; text-align: right; }
+        .ai-message { background-color: #f0f0f0; align-self: flex-start; }
+        .input-area { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;} /* Added flex-wrap */
         .input-area input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .input-area input[type="file"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .input-area input[type="file"] { flex-basis: 100%; margin-top: 5px; } /* New style for file input */
         .input-area button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .input-area button:hover { background-color: #0056b3; }
+        .loading-indicator { text-align: center; font-style: italic; color: #555; margin-top: 10px;}
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <h1>Doctor Assistant Chat</h1>
+        <h1>Simple LLM Chat</h1>
         <div class="chat-box" id="chat-box">
-            </div>
+            <div class="message ai-message">Hello! I am a simple AI assistant. How can I help you today?</div>
+        </div>
+        <div class="loading-indicator" id="loading-indicator" style="display: none;">AI is thinking...</div>
         <div class="input-area">
-            <input type="text" id="text-input" placeholder="Type your message...">
-            <input type="file" id="file-input" accept=".pdf,image/*">
-            <button onclick="sendMessage()">Send</button>
+            <input type="text" id="text-input" placeholder="Type your message..." autocomplete="off">
+            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg"> <button id="send-button" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script>
         const chatBox = document.getElementById('chat-box');
         const textInput = document.getElementById('text-input');
-        const fileInput = document.getElementById('file-input');
+        const fileInput = document.getElementById('file-input'); // Added back
+        const sendButton = document.getElementById('send-button');
+        const loadingIndicator = document.getElementById('loading-indicator');
 
-        // Function to add messages to the chat box
         function addMessage(message, sender = 'ai') {
             const msgDiv = document.createElement('div');
             msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
             msgDiv.textContent = message;
             chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-
-        // Send initial welcome message from AI
-        addMessage("Hello! I'm your medical assistant. I can help you understand your medical information, such as blood test reports. Please upload a PDF or image, or type in your relevant medical details.");
 
         async function sendMessage() {
             const text = textInput.value.trim();
-            const file = fileInput.files[0];
+            const file = fileInput.files[0]; // Get the selected file
 
-            if (!text && !file) {
-                alert("Please enter text or select a file.");
+            if (!text && !file) { // User must provide text OR a file
+                alert("Please enter text or upload a file.");
                 return;
             }
 
+            textInput.disabled = true;
+            fileInput.disabled = true; // Disable file input
+            sendButton.disabled = true;
+            loadingIndicator.style.display = 'block';
+
             const formData = new FormData();
-            if (file) {
-                formData.append('file', file);
-                addMessage(`Uploading file: ${file.name}`, 'user');
-            } else if (text) {
+            if (text) {
                 formData.append('text_input', text);
                 addMessage(text, 'user');
             }
+            if (file) {
+                formData.append('uploaded_file', file); // Use 'uploaded_file' as the name
+                addMessage(`Uploaded file: ${file.name}`, 'user'); // Show filename
+            }
 
-            textInput.value = ''; // Clear text input
+            textInput.value = '';
             fileInput.value = ''; // Clear file input
 
             try {
                 const response = await fetch('{% url "chat_api" %}', {
                     method: 'POST',
                     body: formData,
-                    // Django's CSRF token for security (important in production)
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
                     }
                 });
                 const data = await response.json();
-                console.log(data); // Log the response from your Django backend
-                // In a real app, you'd process data.message and add AI response here
-                // For now, let's just show a simple acknowledgement
-                addMessage(data.message, 'ai');
+                console.log('API Response:', data);
 
-                // If the AI says 'OFF_TOPIC', we'd expect it to send the guiding message again.
-                // For a more robust chat, you'd handle the LangGraph responses here.
+                addMessage(data.message, 'ai');
 
             } catch (error) {
                 console.error('Error sending message:', error);
                 addMessage('Sorry, something went wrong. Please try again.', 'ai');
+            } finally {
+                textInput.disabled = false;
+                fileInput.disabled = false; // Re-enable file input
+                sendButton.disabled = false;
+                loadingIndicator.style.display = 'none';
+                textInput.focus();
             }
         }
 
-        // Function to get CSRF token (required for Django POST requests)
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
@@ -108,6 +113,12 @@
             }
             return cookieValue;
         }
+
+        textInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>

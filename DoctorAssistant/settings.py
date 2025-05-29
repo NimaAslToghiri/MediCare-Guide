@@ -12,10 +12,20 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+dotenv_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+    print(f"DEBUG: Loaded .env from {dotenv_path}")
+else:
+    print(f"DEBUG: .env file not found at {dotenv_path}")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -28,7 +38,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+_openai_key_debug = os.environ.get('OPENAI_API_KEY')
+if _openai_key_debug:
+    print(f"DEBUG: OPENAI_API_KEY loaded: {'*****' + _openai_key_debug[-4:] if len(_openai_key_debug) > 4 else _openai_key_debug}")
+else:
+    print("DEBUG: OPENAI_API_KEY is NOT loaded from environment or .env file.")
 
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
 # Application definition
 
 INSTALLED_APPS = [

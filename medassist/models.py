@@ -4,14 +4,11 @@ from django.db import models
 from django.contrib.auth.models import User # Using Django's built-in User model
 
 class MedicalDocument(models.Model):
-    """
-    Stores uploaded medical documents (PDFs, images) or plain text input.
-    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='medical_documents')
     document_type_choices = [
         ('PDF', 'PDF Document'),
         ('IMAGE', 'Image File'),
-        ('TEXT', 'Plain Text'),
+        ('TEXT', 'Plain Text'), # For direct text input or OCR results stored here
     ]
     document_type = models.CharField(
         max_length=10,
@@ -19,15 +16,13 @@ class MedicalDocument(models.Model):
         default='TEXT',
         help_text="Type of the document (e.g., PDF, Image, Plain Text)."
     )
-    # FileField to store uploaded PDFs/Images
     file = models.FileField(
         upload_to='medical_documents/',
-        blank=True, # Allow this field to be empty if it's plain text
-        null=True,   # Allow NULL in the database
+        blank=True,
+        null=True,
         help_text="Uploaded PDF or image file."
     )
-    # TextField to store plain text input directly from user or OCR results
-    raw_text = models.TextField(
+    raw_text = models.TextField( # This is where OCR text will be saved
         blank=True,
         null=True,
         help_text="Raw text content from user input or OCR extraction."
@@ -36,6 +31,7 @@ class MedicalDocument(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s {self.document_type} on {self.upload_date.strftime('%Y-%m-%d')}"
+
 
 class ExtractedMedicalData(models.Model):
     """
