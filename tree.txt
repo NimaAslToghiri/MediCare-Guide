@@ -1,0 +1,78 @@
+.
+├── assistant
+│   ├── admin.py
+│   ├── agents.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── __init__.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── 0002_chatmessage.py
+│   │   ├── 0003_remove_chatmessage_is_user_chatmessage_sender.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-39.pyc
+│   │       ├── 0002_chatmessage.cpython-39.pyc
+│   │       ├── 0003_remove_chatmessage_is_user_chatmessage_sender.cpython-39.pyc
+│   │       └── __init__.cpython-39.pyc
+│   ├── models.py
+│   ├── __pycache__
+│   │   ├── admin.cpython-39.pyc
+│   │   ├── agents.cpython-39.pyc
+│   │   ├── apps.cpython-39.pyc
+│   │   ├── forms.cpython-39.pyc
+│   │   ├── __init__.cpython-39.pyc
+│   │   ├── models.cpython-39.pyc
+│   │   ├── urls.cpython-39.pyc
+│   │   └── views.cpython-39.pyc
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── db.sqlite3
+├── DoctorAssistant
+│   ├── asgi.py
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-39.pyc
+│   │   ├── settings.cpython-39.pyc
+│   │   ├── urls.cpython-39.pyc
+│   │   └── wsgi.cpython-39.pyc
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── manage.py
+├── medassist
+│   ├── admin.py
+│   ├── apps.py
+│   ├── __init__.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── 0001_initial.cpython-39.pyc
+│   │       └── __init__.cpython-39.pyc
+│   ├── models.py
+│   ├── __pycache__
+│   │   ├── admin.cpython-39.pyc
+│   │   ├── apps.cpython-39.pyc
+│   │   ├── __init__.cpython-39.pyc
+│   │   ├── models.cpython-39.pyc
+│   │   ├── urls.cpython-39.pyc
+│   │   └── views.cpython-39.pyc
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── media
+│   └── documents
+│       └── download.png
+├── requrements.txt
+├── templates
+│   ├── assistant
+│   │   └── chat.html
+│   ├── medassist
+│   │   └── chat.html
+│   └── registration
+│       └── login.html
+└── tree.txt
+
+16 directories, 59 files

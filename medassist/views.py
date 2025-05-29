@@ -5,7 +5,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .models import MedicalDocument # Import your model
+from django.http import HttpResponse
 
+def home(request):
+    return HttpResponse("Welcome to DoctorAssistant Home Page!")
 # This will be your main chat page
 @login_required # Ensure user is logged in
 def chat_view(request):
