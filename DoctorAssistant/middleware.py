@@ -9,7 +9,7 @@ class CorsMiddleware:
         # Handle preflight OPTIONS requests
         if request.method == "OPTIONS":
             response = HttpResponse()
-            response["Access-Control-Allow-Origin"] = "*"
+            response["Access-Control-Allow-Origin"] = "http://localhost:9002"  # Specific origin for credentials
             response["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
             response["Access-Control-Allow-Headers"] = "Accept, Content-Type, X-CSRFToken, Authorization, X-Requested-With"
             response["Access-Control-Allow-Credentials"] = "true"
@@ -19,7 +19,7 @@ class CorsMiddleware:
         response = self.get_response(request)
         
         # Add CORS headers to all responses
-        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Origin"] = "http://localhost:9002"  # Specific origin for credentials
         response["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         response["Access-Control-Allow-Headers"] = "Accept, Content-Type, X-CSRFToken, Authorization, X-Requested-With"
         response["Access-Control-Allow-Credentials"] = "true"

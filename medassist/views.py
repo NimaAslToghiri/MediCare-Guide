@@ -7,7 +7,8 @@ from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from .models import MedicalDocument # Import your model
+from .models import MedicalDocument, MedicalAssistantInteraction
+from .ai_service import MedicalAIService
 import json
 
 @ensure_csrf_cookie
@@ -150,17 +151,11 @@ def chat_view(request):
 def chat_api_endpoint(request):
     """
     CSRF-protected API endpoint for handling chat requests from Next.js frontend.
-    Expects either:
-    - multipart/form-data with 'file' and optional 'text_input'
-    - application/x-www-form-urlencoded with 'text_input'
-    
-    CSRF token should be provided via:
-    - X-CSRFToken header (recommended for API calls)
-    - csrfmiddlewaretoken form field (for form submissions)
+    Now includes AI analysis using OpenAI.
     """
     user = request.user
-    response_data = {"status": "success", "message": "Received input."}
-
+    ai_service = MedicalAIService()
+    
     try:
         if 'file' in request.FILES:
             uploaded_file = request.FILES['file']
@@ -171,16 +166,36 @@ def chat_api_endpoint(request):
                 file=uploaded_file
             )
             medical_doc.save()
-            response_data.update({
+            
+            # TODO: Add OCR extraction for files here
+            # For now, we'll use a placeholder text
+            file_content = f"File uploaded: {uploaded_file.name}"
+            
+            # Get AI analysis for the document
+            ai_result = ai_service.analyze_medical_document(
+                document_text=file_content,
+                document_type=medical_doc.document_type
+            )
+            
+            # Save the interaction
+            interaction = MedicalAssistantInteraction(
+                user=user,
+                input_query=f"File upload: {uploaded_file.name}",
+                reasoning_output=ai_result.get('ai_response', 'No analysis available'),
+                final_analysis=ai_result.get('ai_response', 'No analysis available')
+            )
+            interaction.save()
+            
+            response_data = {
+                "status": "success",
                 "document_id": medical_doc.id,
                 "input_type": "file_upload",
-                "message": f"File '{uploaded_file.name}' uploaded successfully. I'll analyze it for you."
-            })
-            # Here, you'd trigger your LangGraph run with the new document_id
-            print(f"File saved: {medical_doc.file.path}")
-
+                "message": ai_result.get('ai_response', f"File '{uploaded_file.name}' uploaded successfully.")
+            }
+            
         elif 'text_input' in request.POST:
             text_input = request.POST['text_input']
+            
             # Save the text to MedicalDocument model
             medical_doc = MedicalDocument(
                 user=user,
@@ -188,13 +203,41 @@ def chat_api_endpoint(request):
                 raw_text=text_input
             )
             medical_doc.save()
-            response_data.update({
+            
+            # Get user's previous medical history for context
+            previous_interactions = MedicalAssistantInteraction.objects.filter(
+                user=user
+            ).order_by('-timestamp')[:3]
+            
+            user_history = ""
+            if previous_interactions:
+                history_parts = []
+                for interaction in previous_interactions:
+                    history_parts.append(f"Previous query: {interaction.input_query[:100]}")
+                user_history = " | ".join(history_parts)
+            
+            # Get AI analysis for the text
+            ai_result = ai_service.analyze_medical_text(
+                text_input=text_input,
+                user_history=user_history if user_history else None
+            )
+            
+            # Save the interaction
+            interaction = MedicalAssistantInteraction(
+                user=user,
+                input_query=text_input,
+                reasoning_output=ai_result.get('ai_response', 'No analysis available'),
+                final_analysis=ai_result.get('ai_response', 'No analysis available')
+            )
+            interaction.save()
+            
+            response_data = {
+                "status": "success",
                 "document_id": medical_doc.id,
                 "input_type": "text_input",
-                "message": f"I've received your message: '{text_input[:50]}...' Let me analyze this for you."
-            })
-            # Here, you'd trigger your LangGraph run with the new document_id
-            print(f"Text saved: {medical_doc.raw_text}")
+                "message": ai_result.get('ai_response', f"I've received your message: '{text_input[:50]}...' Let me analyze this for you.")
+            }
+            
         else:
             response_data = {
                 "status": "error",

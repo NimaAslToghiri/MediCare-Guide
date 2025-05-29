@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -161,6 +165,12 @@ CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS
 CSRF_USE_SESSIONS = False     # Use cookie-based CSRF tokens (default)
 CSRF_COOKIE_AGE = 31449600    # 1 year (adjust as needed)
 
+# Add trusted origins for CSRF protection
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:9002',  # Next.js frontend
+    'http://127.0.0.1:9002',  # Alternative localhost
+]
+
 # For external frontend, we need to disable CSRF verification for API endpoints
 # or handle it properly with trusted origins
 CSRF_COOKIE_DOMAIN = None     # Allow all domains
@@ -173,3 +183,5 @@ CSRF_COOKIE_NAME = 'csrftoken'
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_HTTPONLY = True
+
+# OpenRouter API Configuration will be loaded from .env file
