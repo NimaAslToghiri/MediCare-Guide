@@ -8,24 +8,57 @@
       max-width: 700px;
       margin: auto;
       padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .logout-link {
+      padding: 8px 16px;
+      background-color: #dc3545;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .logout-link:hover {
+      background-color: #c82333;
+    }
+    .chat-container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
     }
     .chat-box {
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       padding: 15px;
       margin-bottom: 10px;
       border-radius: 10px;
+      max-height: 400px;
+      overflow-y: auto;
     }
     .chat-box.user {
-      background-color: #e1f5fe;
+      background-color: #e3f2fd;
       text-align: right;
+      margin-left: 20%;
     }
     .chat-box.agent {
       background-color: #f1f8e9;
       text-align: left;
+      margin-right: 20%;
     }
     .upload-section {
       margin-top: 20px;
-      padding: 10px;
+      padding: 20px;
       border: 1px solid #ddd;
       background: #f9f9f9;
       border-radius: 8px;
@@ -33,37 +66,96 @@
     .form-section {
       margin-top: 20px;
     }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      padding: 12px 24px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .file-input {
+      margin: 10px 0;
+    }
+    .welcome-message {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <h1>Doctor Assistant</h1>
-
-  {% if user.is_authenticated %}
-    <p>You are logged in as <strong>{{ user.username }}</strong></p>
-  {% else %}
-    <p><a href="/admin/login/">Login</a> to continue.</p>
-  {% endif %}
-
-  <div class="chat-history">
-    {% for msg in chat_history %}
-      <div class="chat-box {{ msg.sender }}">
-        {{ msg.message|linebreaks }}
+  <div class="header">
+    <h1>Doctor Assistant</h1>
+    {% if user.is_authenticated %}
+      <div>
+        <span>Welcome, <strong>{{ user.username }}</strong></span>
+        <a href="{% url 'logout' %}" class="logout-link">Logout</a>
       </div>
-    {% endfor %}
+    {% endif %}
   </div>
 
-  <div class="form-section">
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
+  <div class="chat-container">
+    {% if user.is_authenticated %}
+      {% if message %}
+        <div class="welcome-message">
+          {{ message|linebreaks }}
+        </div>
+      {% endif %}
 
-      <label for="user_message"><strong>Type a message (optional):</strong></label><br>
-      <textarea name="user_message" id="user_message" rows="3" style="width:100%;" placeholder="Write your message here..."></textarea><br><br>
+      <div class="chat-history">
+        {% for msg in chat_history %}
+          <div class="chat-box {{ msg.sender }}">
+            <strong>{{ msg.sender|capfirst }}:</strong> {{ msg.message|linebreaks }}
+            <small style="opacity: 0.7; display: block; margin-top: 5px;">
+              {{ msg.timestamp|date:"M d, Y H:i" }}
+            </small>
+          </div>
+        {% empty %}
+          <div class="chat-box agent">
+            <strong>Assistant:</strong> Hello! I'm ready to help you with your medical documents and questions.
+          </div>
+        {% endfor %}
+      </div>
 
-      <label for="file"><strong>Upload a medical file (optional):</strong></label><br>
-      {{ form.as_p }}
+      <div class="form-section">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
 
-      <button type="submit">Send</button>
-    </form>
+          <label for="user_message"><strong>Type a message:</strong></label>
+          <textarea name="user_message" id="user_message" rows="3" placeholder="Ask me about your medical reports, symptoms, or upload a document..."></textarea>
+
+          <div class="file-input">
+            <label for="file"><strong>Upload a medical file (optional):</strong></label><br>
+            {{ form.as_p }}
+          </div>
+
+          <button type="submit">Send Message</button>
+        </form>
+      </div>
+    {% else %}
+      <p style="text-align: center; padding: 40px;">
+        <a href="{% url 'login' %}" style="padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;">
+          Login to Continue
+        </a>
+      </p>
+    {% endif %}
   </div>
 </body>
 </html>

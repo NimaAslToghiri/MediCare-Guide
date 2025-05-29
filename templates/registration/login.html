@@ -1,19 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Login - Medical Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .logged-in-section {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #d4edda;
+      border-radius: 4px;
+    }
+    .logout-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #dc3545;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .logout-link:hover {
+      background-color: #c82333;
+    }
+    .continue-link {
+      display: inline-block;
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 8px 16px;
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .continue-link:hover {
+      background-color: #218838;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-
-      {% if user.is_authenticated %}
-        <p>You are logged in as {{ user.username }}</p>
-        <a href="{% url 'logout' %}">Logout</a>
+  <div class="login-container">
+    <h2>Medical Assistant Login</h2>
+    
+    {% if user.is_authenticated %}
+      <div class="logged-in-section">
+        <p>✅ You are already logged in as <strong>{{ user.username }}</strong></p>
+        <a href="{% url 'chat_page' %}" class="continue-link">Continue to Chat</a>
+        <a href="{% url 'logout' %}" class="logout-link">Logout</a>
+      </div>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+      </form>
+      
+      <p style="text-align: center; margin-top: 20px;">
+        Don't have an account? Contact admin for access.
+      </p>
     {% endif %}
-  </form>
+  </div>
 </body>
 </html>

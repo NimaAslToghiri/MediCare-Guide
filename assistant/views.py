@@ -9,6 +9,19 @@ import mimetypes
 from .agents import intro_agent_with_llm, input_validator_agent, reasoning_agent, revisor_agent
 import mimetypes
 
+# Load environment variables
+load_dotenv()
+
+def get_user_history_summary(user):
+    """Get a summary of user's medical document history"""
+    docs = MedicalDocument.objects.filter(user=user).order_by('-uploaded_at')
+    if not docs.exists():
+        return "User has no prior medical documents."
+
+    summaries = []
+    for doc in docs[:3]:  # Limit to last 3 documents
+        summaries.append(f"- {doc.file.name} uploaded on {doc.uploaded_at.date()}")
+    return "\n".join(summaries)
 
 @login_required
 def chat_page(request):
@@ -22,6 +35,7 @@ def chat_page(request):
 
         document_saved = False
         message_saved = False
+        is_valid = True  # Initialize is_valid
 
         # 🧾 Save file if any
         if request.FILES.get("file"):
@@ -50,27 +64,26 @@ def chat_page(request):
         # 🧠 Save message if any
         if user_message:
             is_valid = input_validator_agent(user_message)
-            if is_valid:
-                ChatMessage.objects.create(user=request.user, message=user_message, sender='user')
-            else:
-                ChatMessage.objects.create(user=request.user, message=user_message, sender='user')
+            ChatMessage.objects.create(user=request.user, message=user_message, sender='user')
+            
+            if not is_valid:
                 ChatMessage.objects.create(user=request.user, message="⚠️ Please provide a medically relevant message or upload a report.", sender='agent')
             message_saved = True
 
         # 🤖 Agent Response if valid message
         if message_saved and is_valid:
-            context = "\n".join([
-                f"{msg.sender.capitalize()}: {msg.message}" for msg in chat_log
-            ]) + f"\nUser: {user_message}"
-
-            reasoning = reasoning_agent(user_message, get_user_history_summary(request.user))
-            final_reply = revisor_agent(reasoning, user_message, get_user_history_summary(request.user))
-            ChatMessage.objects.create(user=request.user, message=final_reply, sender='agent')
+            try:
+                reasoning = reasoning_agent(user_message, get_user_history_summary(request.user))
+                final_reply = revisor_agent(reasoning, user_message, get_user_history_summary(request.user))
+                ChatMessage.objects.create(user=request.user, message=final_reply, sender='agent')
+            except Exception as e:
+                ChatMessage.objects.create(user=request.user, message="Sorry, I encountered an error processing your request. Please try again.", sender='agent')
+                print(f"Agent error: {e}")
 
         return redirect("chat_page")
 
     return render(request, "assistant/chat.html", {
         "form": form,
         "message": intro_message,
-        "chat_log": chat_log,
+        "chat_history": chat_log,  # Changed from chat_log to match template
     })
