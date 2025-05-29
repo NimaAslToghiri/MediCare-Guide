@@ -5,6 +5,8 @@ from .models import ChatMessage, MedicalDocument
 from .forms import MedicalDocumentForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.http import require_http_methods
 import mimetypes
 from .agents import intro_agent_with_llm, input_validator_agent, reasoning_agent, revisor_agent
 import mimetypes
@@ -24,12 +26,20 @@ def get_user_history_summary(user):
     return "\n".join(summaries)
 
 @login_required
+@ensure_csrf_cookie
+@require_http_methods(["GET", "POST"])
 def chat_page(request):
+    """
+    Chat page view with proper CSRF token handling for frontend integration
+    """
     form = MedicalDocumentForm()
     intro_message = intro_agent_with_llm(request.user)
     chat_log = ChatMessage.objects.filter(user=request.user).order_by('timestamp')
 
     if request.method == 'POST':
+        # CSRF protection is automatically handled by the middleware
+        # since we're using the @csrf_protect decorator (implied by middleware)
+        
         form = MedicalDocumentForm(request.POST, request.FILES)
         user_message = request.POST.get("user_message", "").strip()
 

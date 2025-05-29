@@ -136,3 +136,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# CSRF Settings for Next.js Frontend Integration
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read the CSRF cookie
+CSRF_COOKIE_SAMESITE = 'Lax'  # Appropriate for development with different ports
+CSRF_COOKIE_SECURE = False    # Set to True in production with HTTPS
+CSRF_USE_SESSIONS = False     # Use cookie-based CSRF tokens (default)
+CSRF_COOKIE_AGE = 31449600    # 1 year (adjust as needed)
+
+# Additional CORS settings if needed for Next.js integration
+# CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']  # Add your Next.js frontend URL
