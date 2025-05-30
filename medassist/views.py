@@ -24,26 +24,32 @@ if not logger.handlers:
 
 def get_or_initialize_graph_state(request) -> AgentState:
     logger.debug("VIEW: get_or_initialize_graph_state called")
-    session_key = 'langgraph_medical_assistant_state_v2'
+    session_key = 'langgraph_medical_assistant_state_v3'  # Changed key for new state structure
 
     if session_key not in request.session:
         logger.info(f"VIEW: Session state for key '{session_key}' not found. Initializing.")
         initial_state_data: AgentState = {
             "user_id": request.user.id, "chat_history": [], "current_user_input_text": None,
             "medical_document_id": None, "ocr_extracted_text": None,
-            "ocr_error_message": None, "initial_reasoning_output": None,  # Added missing reasoning fields
+            "ocr_error_message": None,
+            "query_for_rag": None,  # New RAG field
+            "translated_query_for_rag": None,  # New RAG field
+            "retrieved_rag_documents": [],  # New RAG field (init as empty list)
+            "initial_reasoning_output": None,
             "reasoning_error_message": None, "final_llm_response": None,
             "revisor_error_message": None
         }
         request.session[session_key] = initial_state_data
-        logger.info("VIEW: New LangGraph session state initialized.")
+        logger.info("VIEW: New LangGraph session state initialized (with RAG fields).")
     else:
-        logger.debug(f"VIEW: Session state for key '{session_key}' found. Loading existing state.")
+        # ... (your existing logic to ensure all keys are present) ...
+        # MAKE SURE THE default_keys HERE MATCHES THE AgentState definition above
         current_state = request.session[session_key]
-        default_keys: AgentState = {  # Ensure this matches your AgentState TypedDict
+        default_keys: AgentState = {
             "user_id": request.user.id, "chat_history": [], "current_user_input_text": None,
             "medical_document_id": None, "ocr_extracted_text": None,
-            "ocr_error_message": None, "initial_reasoning_output": None,
+            "ocr_error_message": None, "query_for_rag": None, "translated_query_for_rag": None,
+            "retrieved_rag_documents": [], "initial_reasoning_output": None,
             "reasoning_error_message": None, "final_llm_response": None,
             "revisor_error_message": None
         }
@@ -58,7 +64,9 @@ def get_or_initialize_graph_state(request) -> AgentState:
     loaded_state = request.session[session_key]
     if not isinstance(loaded_state.get("chat_history"), list):
         loaded_state["chat_history"] = []
-        request.session[session_key] = loaded_state
+    if not isinstance(loaded_state.get("retrieved_rag_documents"), list):  # Ensure RAG docs is a list
+        loaded_state["retrieved_rag_documents"] = []
+    request.session[session_key] = loaded_state  # Save corrections
     return loaded_state
 
 
