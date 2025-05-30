@@ -3,31 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Chat</title>
+    <title>Medical Assist Chat</title>
     <style>
-        body { font-family: sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
-        .chat-container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .chat-box { border: 1px solid #ddd; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 4px; background-color: #e9e9e9; display: flex; flex-direction: column;}
-        .message { margin-bottom: 8px; padding: 5px 10px; border-radius: 5px; max-width: 70%; word-wrap: break-word; }
-        .user-message { background-color: #dcf8c6; align-self: flex-end; text-align: right; }
-        .ai-message { background-color: #f0f0f0; align-self: flex-start; }
-        .input-area { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;} /* Added flex-wrap */
-        .input-area input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        .input-area input[type="file"] { flex-basis: 100%; margin-top: 5px; } /* New style for file input */
-        .input-area button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .input-area button:hover { background-color: #0056b3; }
-        .loading-indicator { text-align: center; font-style: italic; color: #555; margin-top: 10px;}
+        /* --- Global Styles & Variables (same as before) --- */
+        :root {
+            --body-bg: #f7f9fc;
+            --chat-container-bg: #ffffff;
+            --chat-box-bg: #f0f2f5;
+            --user-message-bg: #007bff;
+            --user-message-text: #ffffff;
+            --ai-message-bg: #e9ecef;
+            --ai-message-text: #333333;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --input-bg: #ffffff;
+            --input-border-focus: #80bdff;
+            --button-bg: #007bff;
+            --button-hover-bg: #0056b3;
+            --header-color: #0056b3;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --base-font-size: 16px;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --box-shadow-light: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--base-font-size);
+            margin: 0;
+            padding: 20px;
+            background-color: var(--body-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            max-width: 700px;
+            width: 100%;
+            background: var(--chat-container-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 40px);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--header-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.75rem;
+        }
+
+        .chat-box {
+            border: 1px solid var(--border-color);
+            height: 450px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            background-color: var(--chat-box-bg);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-box::-webkit-scrollbar { width: 8px; }
+        .chat-box::-webkit-scrollbar-track { background: var(--chat-box-bg); border-radius: 10px; }
+        .chat-box::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; border: 2px solid var(--chat-box-bg); }
+        .chat-box::-webkit-scrollbar-thumb:hover { background-color: #adb5bd; }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            max-width: 75%;
+            word-wrap: break-word;
+            box-shadow: var(--box-shadow-light);
+            line-height: 1.5;
+        }
+
+        .user-message {
+            background-color: var(--user-message-bg);
+            color: var(--user-message-text);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message {
+            background-color: var(--ai-message-bg);
+            color: var(--ai-message-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        .input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .input-area input[type="text"]:focus {
+            outline: none;
+            border-color: var(--input-border-focus);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .file-input-label { /* Changed class name for clarity */
+            position: relative; /* For absolute positioning of the input if needed, not strictly necessary for this approach */
+            display: inline-flex; /* To keep text and clear button on one line */
+            align-items: center;
+            padding: 10px 12px;
+            background-color: #6c757d;
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease-in-out;
+            white-space: nowrap; /* Prevent text from wrapping */
+            overflow: hidden; /* Hide overflow from long filenames in span */
+            text-overflow: ellipsis; /* Add ellipsis to long filenames in span */
+            max-width: 180px; /* Max width for the label before text truncates */
+        }
+        .file-input-label:hover {
+            background-color: #5a6268;
+        }
+        /* The actual input is hidden via JS setting its display to none, but styled label acts as its interface */
+        .file-input-label input[type="file"] {
+            display: none; /* Hide the default file input */
+        }
+
+        #file-name-display { /* Span to display "Attach File" or the filename */
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 120px; /* Adjust as needed so "X" is visible */
+        }
+
+        #clear-file-button {
+            display: none; /* Hidden by default */
+            margin-left: 8px;
+            font-weight: bold;
+            color: #f8d7da; /* Light red for clear button */
+            cursor: pointer;
+            padding: 0 5px; /* Make it easier to click */
+        }
+        #clear-file-button:hover {
+            color: #dc3545; /* Darker red on hover */
+        }
+
+
+        .input-area button#send-button { /* Specific to send button */
+            padding: 12px 20px;
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+        }
+
+        .input-area button#send-button:hover {
+            background-color: var(--button-hover-bg);
+        }
+        .input-area button#send-button:active {
+            transform: translateY(1px);
+        }
+
+        .loading-indicator {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            margin: 10px 0;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <h1>Medical Assist</h1>
         <div class="chat-box" id="chat-box">
-            <div class="message ai-message">Hello! I am a simple AI assistant. How can I help you today?</div>
-        </div>
+            </div>
         <div class="loading-indicator" id="loading-indicator" style="display: none;">AI is thinking...</div>
         <div class="input-area">
             <input type="text" id="text-input" placeholder="Type your message..." autocomplete="off">
+
+            <label class="file-input-label" for="file-input"> <span id="file-name-display">Attach File</span>
+                <span id="clear-file-button">&times;</span>
+            </label>
             <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg"> <button id="send-button" onclick="sendMessage()">Send</button>
         </div>
     </div>
@@ -35,13 +218,60 @@
     <script>
         const chatBox = document.getElementById('chat-box');
         const textInput = document.getElementById('text-input');
-        const fileInput = document.getElementById('file-input'); // Added back
+        const fileInput = document.getElementById('file-input');
+        const fileInputLabel = document.querySelector('.file-input-label'); // Get the label
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const clearFileButton = document.getElementById('clear-file-button');
         const sendButton = document.getElementById('send-button');
         const loadingIndicator = document.getElementById('loading-indicator');
 
+        // Hide the actual file input, style the label instead
+        fileInput.style.display = 'none';
+
+        // Function to reset file input display
+        function resetFileInputDisplay() {
+            fileNameDisplay.textContent = 'Attach File';
+            clearFileButton.style.display = 'none';
+            fileInput.value = ''; // Crucially clear the file input's value
+        }
+
+        // Event listener for file selection
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length > 0) {
+                // Truncate filename if too long for display
+                let fileName = fileInput.files[0].name;
+                const maxLength = 20; // Max characters for filename display
+                if (fileName.length > maxLength) {
+                    fileName = fileName.substring(0, maxLength - 3) + "...";
+                }
+                fileNameDisplay.textContent = fileName;
+                clearFileButton.style.display = 'inline'; // Show clear button
+            } else {
+                resetFileInputDisplay();
+            }
+        });
+
+        // Event listener for clear file button
+        clearFileButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent label from triggering file dialog
+            event.stopPropagation(); // Stop event from bubbling to label
+            resetFileInputDisplay();
+        });
+
+
+        // Add initial greeting if chatbox is empty
+        if (chatBox.children.length === 0) {
+             addMessage("Hello! I am your AI Medical Assistant. How can I assist you today?", 'ai');
+        }
+
         function addMessage(message, sender = 'ai') {
             const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+            msgDiv.classList.add('message');
+            if (sender === 'user') {
+                msgDiv.classList.add('user-message');
+            } else {
+                msgDiv.classList.add('ai-message');
+            }
             msgDiv.textContent = message;
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -49,50 +279,54 @@
 
         async function sendMessage() {
             const text = textInput.value.trim();
-            const file = fileInput.files[0]; // Get the selected file
+            const file = fileInput.files[0];
 
-            if (!text && !file) { // User must provide text OR a file
+            if (!text && !file) {
                 alert("Please enter text or upload a file.");
                 return;
             }
 
             textInput.disabled = true;
-            fileInput.disabled = true; // Disable file input
+            // fileInput.disabled = true; // Not needed as it's hidden, label interaction is visual
+            if (fileInputLabel) fileInputLabel.style.pointerEvents = 'none'; // Disable clicking label
             sendButton.disabled = true;
             loadingIndicator.style.display = 'block';
 
             const formData = new FormData();
+            let userMessageForHistory = "";
+
             if (text) {
                 formData.append('text_input', text);
-                addMessage(text, 'user');
+                userMessageForHistory = text;
             }
             if (file) {
-                formData.append('uploaded_file', file); // Use 'uploaded_file' as the name
-                addMessage(`Uploaded file: ${file.name}`, 'user'); // Show filename
+                formData.append('uploaded_file', file);
+                userMessageForHistory += (userMessageForHistory ? `\n` : '') + `Uploaded file: ${file.name}`; // Use original full file.name for history
             }
 
+            addMessage(userMessageForHistory, 'user');
+
             textInput.value = '';
-            fileInput.value = ''; // Clear file input
+            resetFileInputDisplay(); // Reset file input display and value after processing
 
             try {
                 const response = await fetch('{% url "chat_api" %}', {
                     method: 'POST',
                     body: formData,
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
                 });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+                    throw new Error(errorData.message || `HTTP error ${response.status}`);
+                }
                 const data = await response.json();
-                console.log('API Response:', data);
-
                 addMessage(data.message, 'ai');
-
             } catch (error) {
                 console.error('Error sending message:', error);
-                addMessage('Sorry, something went wrong. Please try again.', 'ai');
+                addMessage(`Sorry, something went wrong: ${error.message}`, 'ai');
             } finally {
                 textInput.disabled = false;
-                fileInput.disabled = false; // Re-enable file input
+                if (fileInputLabel) fileInputLabel.style.pointerEvents = 'auto'; // Re-enable label
                 sendButton.disabled = false;
                 loadingIndicator.style.display = 'none';
                 textInput.focus();
@@ -115,7 +349,8 @@
         }
 
         textInput.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
                 sendMessage();
             }
         });
