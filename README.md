@@ -26,7 +26,7 @@ MediCare Guide is an AI-powered medical assistant built with Django and LangGrap
 
 * **Backend:** Django, SQLite
 * **Agent Orchestration:** LangGraph
-* **LLMs:** OpenAI GPT-4o (Triage, OCR, Revisor), GPT-3.5-Turbo (Reasoning)
+* **LLMs:** OpenAI GPT-4o (Triage, OCR, Revisor), GPT-o3 (Reasoning)
 * **Embeddings (RAG):** Hugging Face `sentence-transformers/all-mpnet-base-v2`
 * **Vector Store (RAG):** FAISS
 * **Key Libraries:** `langchain`, `django`, `python-dotenv`, `sentence-transformers`, `faiss-cpu`, `pdf2image`
