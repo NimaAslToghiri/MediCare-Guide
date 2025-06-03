@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'medassist',
-    'assistant',
 ]
 
 MIDDLEWARE = [

@@ -99,7 +99,7 @@ llm_openai_vision_ocr: Optional[ChatOpenAI] = None  # For OCR
 if settings.OPENAI_API_KEY:
     try:
         llm_openai_reasoning_revising = ChatOpenAI(
-            model="gpt-4o",  # As per your current code
+            model="gpt-3.5",  # As per your current code
             temperature=0.5,
             api_key=settings.OPENAI_API_KEY,
             max_tokens=1500
@@ -108,7 +108,7 @@ if settings.OPENAI_API_KEY:
             f"OpenAI LLM for Reasoning/Revising/Keywords ({llm_openai_reasoning_revising.model_name}) initialized.")
 
         llm_openai_vision_ocr = ChatOpenAI(
-            model="gpt-4o",  # As per your current code
+            model="gpt-3.5",  # As per your current code
             temperature=0.2,
             api_key=settings.OPENAI_API_KEY,
             max_tokens=2048
@@ -562,7 +562,7 @@ def revisor_agent(state: AgentState) -> AgentState:
         last_user_message_content = user_input_text
 
     system_prompt_revisor_and_responder = f"""
-You are "MediCare Guide", a specialized AI medical assistant.
+You are "Medical assist Guide", a specialized AI medical assistant.
 Task: Generate a comprehensive, empathetic, clear health-related response based on user query, history, document data (possibly JSON from OCR), internal analysis (RAG-informed), and POTENTIAL doctor suggestions.
 
 **LANGUAGE (VERY IMPORTANT):**
@@ -589,6 +589,10 @@ Task: Generate a comprehensive, empathetic, clear health-related response based 
 3. Maintain "MediCare Guide" persona: health-focused, professional, empathetic. Redirect off-topic LATEST queries.
 4. CRITICAL: No medical advice/diagnosis/prescription. ALWAYS include Medical Disclaimer.
 5. Use history for context.
+
+** What you should not to do: **
+Do not help people for unrelated topics, you are designed to help people in medical care issues and analysing pdf image
+which is related to health care. 
 
 User's LATEST message (for language hint): "{last_user_message_content}"
 ---
